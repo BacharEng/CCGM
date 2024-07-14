@@ -1,0 +1,20 @@
+FrontEnd:
+1. Authentication
+2. Set up admin control:
+2.1 Add/edit/delete/update - list of community groups
+2.2 Add/edit/delete/update - list of instructors
+3. Guest/user signup/sign in
+
+
+BackEnd:
+1. Authentication send to mongo
+
+
+
+
+Collection:
+
+Users
+Groups
+Messages
+instructor reviews
