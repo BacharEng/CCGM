@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { User } from "../models/userModel";
 import bcryptjs from "bcryptjs";
-import { json } from "body-parser";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 function getRandomInt(min: number, max: number) {
   const minCeiled = Math.ceil(min);
@@ -59,6 +62,17 @@ export const userLogin = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not set");
+      process.exit(1);
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     const isPasswordValid = await bcryptjs.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -71,6 +85,7 @@ export const userLogin = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "User logged in successfully",
       user: userResponse,
+      token,
     });
   } catch (error) {
     return res.status(500).json({ message: "Error logging in user" });

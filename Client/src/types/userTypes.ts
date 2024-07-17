@@ -14,10 +14,12 @@ export interface User {
 
 export interface LoginResponse {
   user: User;
-  token: string; // Assuming the token is still needed and part of the response
+  token: string;
 }
 
 export interface UserState {
   user: User | null;
+  token?: string;
+  setToken: (token: string) => void;
   login: (email: string, password: string) => Promise<void>;
 }

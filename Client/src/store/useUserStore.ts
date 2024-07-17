@@ -2,20 +2,21 @@ import { create } from "zustand";
 import { authService } from "../services/authService";
 import { UserState, User } from "../types/userTypes";
 
-// Adjusting the UserState type to include the new user data structure
 interface ExtendedUserState extends UserState {
   user: User | null;
+  token?: string;
+  setToken: (token: string) => void;
   login: (email: string, password: string) => Promise<void>;
+  getToken: () => string | undefined; // Adding a method to get the token
 }
 
-const useUserStore = create<ExtendedUserState>((set) => ({
+const useUserStore = create<ExtendedUserState>((set, get) => ({
   user: null,
+  token: undefined,
   login: async (email: string, password: string) => {
     try {
       const response = await authService.login(email, password);
-      //console.log(response);
 
-      // Adjusting to match the received user data structure
       const user: User = {
         _id: response.user._id,
         firstName: response.user.firstName,
@@ -29,14 +30,15 @@ const useUserStore = create<ExtendedUserState>((set) => ({
         isAdmin: response.user.isAdmin,
         createdAt: response.user.createdAt,
       };
-      //console.log(user);
 
-      set({ user });
+      set({ user, token: response.token });
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
     }
   },
+  setToken: (token) => set({ token }),
+  getToken: () => get().token,
 }));
 
 export default useUserStore;

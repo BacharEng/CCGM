@@ -4,15 +4,23 @@ import { toast } from "react-toastify";
 import useUserStore from "../store/useUserStore";
 
 const AuthPage: React.FC = () => {
+  const login = useUserStore((state) => state.login);
+  const token = useUserStore((state) => state.token);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const login = useUserStore((state) => state.login);
+  const [localToken, setLocalToken] = useState(token);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     try {
       await login(email, password);
       // Redirect or show success message
+      // console.log(localToken);
       toast.success("Logged in successfully");
     } catch (error) {
       // Show error message
