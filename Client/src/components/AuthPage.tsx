@@ -3,7 +3,7 @@ import { Button, Form, Container } from "react-bootstrap";
 import { toast } from "react-toastify";
 import useUserStore from "../store/useUserStore";
 
-const AuthPage: React.FC = () => {
+const AuthPage = () => {
   const login = useUserStore((state) => state.login);
   const token = useUserStore((state) => state.token);
   const [email, setEmail] = useState("");
@@ -20,7 +20,8 @@ const AuthPage: React.FC = () => {
     try {
       await login(email, password);
       // Redirect or show success message
-      // console.log(localToken);
+      // console.log(token);
+      setLocalToken(token);
       toast.success("Logged in successfully");
     } catch (error) {
       // Show error message
@@ -47,7 +48,7 @@ const AuthPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-        <Button variant="primary" type="submit">
+        <Button variant="primary" type="submit" className="mt-3">
           Login
         </Button>
       </Form>
