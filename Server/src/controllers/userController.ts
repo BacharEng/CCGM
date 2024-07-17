@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/userModel";
 import bcryptjs from "bcryptjs";
+import { json } from "body-parser";
 
 function getRandomInt(min: number, max: number) {
   const minCeiled = Math.ceil(min);
@@ -13,7 +14,10 @@ export const createUser = async (req: Request, res: Response) => {
     const { firstName, lastName, phoneNumber, email, password, birthDate } =
       req.body;
 
-    const emailExists = await User.findOne({ email });
+    // Convert email to lowercase before checking if it exists
+    const lowercaseEmail = email.toLowerCase();
+
+    const emailExists = await User.findOne({ email: lowercaseEmail });
 
     if (emailExists) {
       return res.status(400).json({ message: "Email is already in use" });
@@ -25,7 +29,7 @@ export const createUser = async (req: Request, res: Response) => {
       firstName,
       lastName,
       phoneNumber,
-      email,
+      email: lowercaseEmail, // Use the lowercase email for the user document
       password: hashedPassword,
       birthDate,
       authenticationToken: getRandomInt(10000, 99999),
@@ -39,6 +43,37 @@ export const createUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Error creating user" });
+  }
+};
+
+export const userLogin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  // Convert email to lowercase
+  const lowercaseEmail = email.toLowerCase();
+
+  try {
+    // Use the lowercase email to query the database
+    const user = await User.findOne({ email: lowercaseEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Exclude sensitive information before sending user data
+    const userResponse = { ...user.toObject(), password: undefined };
+
+    return res.status(200).json({
+      message: "User logged in successfully",
+      user: userResponse,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error logging in user" });
   }
 };
 
@@ -111,6 +146,49 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Error updating user" });
   }
 };
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword } = req.body;
+    console.log(email, newPassword);
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error resetting password" });
+  }
+};
+
+// export const requestPasswordReset = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+//       expiresIn: "1h",
+//     });
+
+//     // Send the reset token to the user's email
+
+//     return res.status(200).json({ message: "Reset token sent successfully" });
+//   } catch (error) {
+//     return res.status(500).json({ message: "Error sending reset token" });
+//   }
+// };
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
