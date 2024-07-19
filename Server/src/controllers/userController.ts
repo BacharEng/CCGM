@@ -165,7 +165,6 @@ export const updateUser = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, newPassword } = req.body;
-    console.log(email, newPassword);
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -183,27 +182,78 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 
-// export const requestPasswordReset = async (req: Request, res: Response) => {
-//   try {
-//     const { email } = req.body;
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
 
-//     const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-//     const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-//       expiresIn: "1h",
-//     });
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not set");
+      process.exit(1);
+    }
 
-//     // Send the reset token to the user's email
+    // Generate a unique code
+    const resetCode = Math.floor(100000 + Math.random() * 900000); // 6 digit code
+    const expirationTime = new Date();
+    expirationTime.setMinutes(expirationTime.getMinutes() + 10); // Code expires in 10 minutes
 
-//     return res.status(200).json({ message: "Reset token sent successfully" });
-//   } catch (error) {
-//     return res.status(500).json({ message: "Error sending reset token" });
-//   }
-// };
+    // Store the code and expiration time in the user's account
+    user.resetCode = resetCode;
+    user.resetCodeExpiration = expirationTime;
+    await user.save();
+
+    // Send the reset token to the user's email
+
+    return res
+      .status(200)
+      .json({ message: "Reset token sent successfully", code: resetCode });
+  } catch (error) {
+    return res.status(500).json({ message: "Error sending reset token" });
+  }
+};
+
+export const verifyResetCode = async (req: Request, res: Response) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", isVerified: false });
+    }
+
+    if (
+      !user.resetCode ||
+      !user.resetCodeExpiration ||
+      user.resetCodeExpiration < new Date()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired code", isVerified: false });
+    }
+
+    if (user.resetCode === parseInt(code)) {
+      // Code is valid
+      return res
+        .status(200)
+        .json({ message: "Code verified successfully", isVerified: true });
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Invalid code", isVerified: false });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error verifying code", isVerified: false });
+  }
+};
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {

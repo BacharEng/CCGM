@@ -12,6 +12,8 @@ interface IUser extends Document {
   isAuthenticated: boolean;
   isInstructor: boolean;
   isAdmin: boolean;
+  resetCode?: number;
+  resetCodeExpiration?: Date;
   isModified(path: string): boolean;
 }
 
@@ -27,6 +29,8 @@ const userSchema = new mongoose.Schema({
   isAuthenticated: { type: Boolean, default: false },
   isInstructor: { type: Boolean, default: false },
   isAdmin: { type: Boolean, default: false },
+  resetCode: { type: Number },
+  resetCodeExpiration: { type: Date },
 });
 
 export const User = mongoose.model<IUser>("User", userSchema);

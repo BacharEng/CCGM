@@ -28,7 +28,7 @@ const App: React.FC = () => {
         <div className="row h-100 align-items-center">
           <div className="col-3"></div>
           <div className="col-6 text-center">
-            <h1>React App</h1>
+            <h1>CCGM website</h1>
             {localToken ? (
               <>
                 <h2>{`Welcome ${localUser?.firstName}  ${localUser?.lastName}`}</h2>

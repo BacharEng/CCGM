@@ -23,3 +23,11 @@ export interface UserState {
   setToken: (token: string) => void;
   login: (email: string, password: string) => Promise<void>;
 }
+
+export interface ResetPasswordResponse {
+  data: string;
+}
+
+export interface VerifyResetCodeResponse {
+  isVerified: boolean;
+}

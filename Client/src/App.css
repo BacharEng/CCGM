@@ -1,3 +1,40 @@
 body {
   background-color: blanchedalmond;
 }
+
+.code-verification-alert {
+  background-color: #28a745; /* A darker shade of green */
+  margin-top: 1rem; /* Optional: Adds some space above the alert */
+  border-radius: 0.25rem; /* Matches Bootstrap's border-radius */
+  color: #fff; /* Ensures text is white for better contrast */
+}
+
+@media (max-width: 768px) {
+  .code-verification-alert {
+    padding: 0.25rem 0.5rem; /* Smaller padding on smaller screens */
+  }
+}
+
+.forgotPasswordBtn {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.returnBtn {
+  font-weight: bold;
+}
+
+.newUserBtn {
+  background-color: #17a2b8; /* Change to a lighter, less dominant color */
+  color: #ffffff; /* Keep white text for contrast */
+  font-weight: bold; /* Keep text bold */
+  border: 2px solid #138496; /* Adjust border color for the new background */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Make shadow more subtle */
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out; /* Keep smooth transition for hover effects */
+}
+
+.newUserBtn:hover,
+.newUserBtn:focus {
+  background-color: #138496; /* Slightly darker shade on hover/focus for interaction feedback */
+  transform: translateY(-1px); /* Less pronounced lift effect on hover/focus */
+}
