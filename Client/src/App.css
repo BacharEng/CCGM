@@ -38,3 +38,19 @@ body {
   background-color: #138496; /* Slightly darker shade on hover/focus for interaction feedback */
   transform: translateY(-1px); /* Less pronounced lift effect on hover/focus */
 }
+
+/* Ensure the entire page is in RTL mode */
+.rtl {
+  direction: rtl;
+}
+
+/* Ensure the navbar items are aligned correctly in RTL mode */
+.navbar-nav {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* Ensure the buttons are always on the right side */
+.float-right {
+  float: right;
+}
