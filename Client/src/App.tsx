@@ -10,30 +10,72 @@ import "./App.css";
 import LoginPage from "./screens/loginPage";
 import AdminScreen from "./screens/adminScreen";
 
-
-
 // Assuming the type of token is string. Adjust according to your actual data model.
 type Token = string | null | undefined;
 
 const App: React.FC = () => {
   const user: User | null = useUserStore((state) => state.user);
   const token: Token = useUserStore((state) => state.token);
-  const [localUser, setLocalUser] = useState<User | null>(user);
-  const [localToken, setLocalToken] = useState<Token>(token);
+  const setUser = useUserStore((state) => state.setUser);
+  const setToken = useUserStore((state) => state.setToken);
+  const logout = useUserStore((state) => state.logout);
+
+  // Initialize state with values from localStorage or from the store if available
+  const [localUser, setLocalUser] = useState<User | null>(() => {
+    if (user) return user;
+    const savedUserData = localStorage.getItem("userData");
+    return savedUserData ? JSON.parse(savedUserData) : null;
+  });
+
+  const [localToken, setLocalToken] = useState<Token>(() => {
+    if (token) return token;
+    return localStorage.getItem("token");
+  });
 
   useEffect(() => {
-    setLocalToken(token); // This will ensure localToken is updated whenever the store's token changes
-    setLocalUser(user); // This will ensure localUser is updated whenever the store's user changes
-    console.log("Current token:", token);
-    console.log("Current user data:", user);
-  }, [token, user]);
+    if (token) {
+      localStorage.setItem("token", token);
+      setLocalToken(token);
+    } else {
+      localStorage.removeItem("token");
+      setLocalToken(null);
+    }
+
+    if (user) {
+      localStorage.setItem("userData", JSON.stringify(user));
+      setLocalUser(user);
+    } else {
+      localStorage.removeItem("userData");
+      setLocalUser(null);
+    }
+  }, [user, token]);
+
+  // Check for session timeout
+  useEffect(() => {
+    const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+    if (tokenTimestamp) {
+      const currentTime = Date.now();
+      const tokenTime = parseInt(tokenTimestamp, 10);
+      if (currentTime - tokenTime > import.meta.env.SESSION_TIMEOUT) {
+        handleLogout();
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("tokenTimestamp");
+    setLocalUser(null);
+    setLocalToken(null);
+  };
 
   return (
     <>
       {localToken ? (
         <div className="admin-container">
-          <h2>{`Welcome ${localUser?.firstName} ${localUser?.lastName}`}</h2>
-          <AdminScreen />
+          <AdminScreen localUser={localUser} handleLogout={handleLogout} />
         </div>
       ) : (
         <div className="container-fluid h-100">

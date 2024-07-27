@@ -1,5 +1,7 @@
+import { ObjectId } from "bson";
+
 export interface User {
-  _id: string;
+  _id: ObjectId;
   firstName: string;
   lastName: string;
   phoneNumber: string;
@@ -19,9 +21,9 @@ export interface LoginResponse {
 
 export interface UserState {
   user: User | null;
-  token?: string;
-  setToken: (token: string) => void;
-  login: (email: string, password: string) => Promise<void>;
+  token: string | null;
+  setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
 }
 
 export interface ResetPasswordResponse {

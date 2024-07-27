@@ -8,9 +8,6 @@ import {
 } from "../types/userTypes";
 
 interface ExtendedUserState extends UserState {
-  user: User | null;
-  token?: string;
-  setToken: (token: string) => void;
   login: (email: string, password: string) => Promise<void>;
   createUser: (
     firstName: string,
@@ -26,15 +23,36 @@ interface ExtendedUserState extends UserState {
     email: string,
     code: string
   ) => Promise<VerifyResetCodeResponse>;
+  logout: () => void;
 }
 
 const useUserStore = create<ExtendedUserState>((set) => ({
-  user: null,
-  token: undefined,
+  user: JSON.parse(localStorage.getItem("userData") || "null"),
+  token: localStorage.getItem("token"),
+
+  setUser: (user) => set({ user }),
+
+  setToken: (token) => {
+    if (token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("tokenTimestamp", Date.now().toString());
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("tokenTimestamp");
+    }
+    set({ token });
+  },
+
+  logout: () => {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenTimestamp");
+    set({ user: null, token: null });
+  },
+
   login: async (email: string, password: string) => {
     try {
       const response = await authService.login(email, password);
-
       const user: User = {
         _id: response.user._id,
         firstName: response.user.firstName,
@@ -48,14 +66,13 @@ const useUserStore = create<ExtendedUserState>((set) => ({
         isAdmin: response.user.isAdmin,
         createdAt: response.user.createdAt,
       };
-
       set({ user, token: response.token });
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
     }
   },
-  setToken: (token) => set({ token }),
+
   createUser: async (
     firstName: string,
     lastName: string,
@@ -73,17 +90,18 @@ const useUserStore = create<ExtendedUserState>((set) => ({
         password,
         birthDate
       );
-      // Optionally, you can handle user creation success, such as setting user state or token
+      // Optionally, handle user creation success
     } catch (error) {
       console.error("Create User failed:", error);
       throw error;
     }
   },
+
   requestResetPassword: async (
     email: string
   ): Promise<ResetPasswordResponse> => {
     try {
-      const lowercaseEmail = email.toLowerCase(); // Convert email to lowercase
+      const lowercaseEmail = email.toLowerCase();
       const data = await authService.requestResetPassword(lowercaseEmail);
       return { data };
     } catch (error) {
@@ -91,21 +109,23 @@ const useUserStore = create<ExtendedUserState>((set) => ({
       throw error;
     }
   },
+
   resetPassword: async (email: string, newPassword: string): Promise<void> => {
     try {
-      const lowercaseEmail = email.toLowerCase(); // Convert email to lowercase
+      const lowercaseEmail = email.toLowerCase();
       await authService.resetPassword(lowercaseEmail, newPassword);
     } catch (error) {
       console.error("Reset Password failed:", error);
       throw error;
     }
   },
+
   verifyResetCode: async (
     email: string,
     code: string
   ): Promise<VerifyResetCodeResponse> => {
     try {
-      const lowercaseEmail = email.toLowerCase(); // Convert email to lowercase
+      const lowercaseEmail = email.toLowerCase();
       const isVerified = await authService.verifyResetCode(
         lowercaseEmail,
         code

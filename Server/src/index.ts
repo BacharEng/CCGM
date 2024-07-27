@@ -3,6 +3,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes";
+import matnasRoutes from "./routes/matnasRoutes";
+import groupRoutes from "./routes/groupRoutes";
+import messageRoutes from "./routes/messageRoutes";
 
 dotenv.config();
 
@@ -24,6 +27,9 @@ if (!process.env.MONGO_URL) {
 }
 
 app.use("/api", userRoutes);
+app.use("/api", matnasRoutes);
+app.use("/api", groupRoutes);
+app.use("/api", messageRoutes);
 
 // Set up MongoDB connection options
 const mongoOptions = {
