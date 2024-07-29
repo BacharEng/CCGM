@@ -45,7 +45,10 @@ const NewMessage: React.FC = () => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         return new Promise<string>((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
+          reader.onload = () => {
+            //console.log(`File loaded: ${file.name}`);
+            resolve(reader.result as string);
+          };
         });
       });
 
@@ -55,11 +58,13 @@ const NewMessage: React.FC = () => {
             ...prevData,
             mainImage: urls[0], // Only one main image
           }));
+          //console.log(`Main image set: ${urls[0]}`);
         } else {
           setMessageData((prevData) => ({
             ...prevData,
             imageArray: urls, // Multiple images
           }));
+          //console.log(`Image array set: ${urls}`);
         }
       });
     }
@@ -75,6 +80,7 @@ const NewMessage: React.FC = () => {
       ...messageData,
       createdBy: user._id,
     };
+    //console.log("Submitting message:", messageToCreate); // Log the message being submitted
     try {
       await createMessage(messageToCreate);
       setMessageData({

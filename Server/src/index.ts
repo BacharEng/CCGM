@@ -14,11 +14,13 @@ const app = express();
 // Configure CORS with options for more security
 const corsOptions = {
   origin: "http://localhost:5173", // Adjust this to your front-end URL
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 
-app.use(express.json());
+// Increase the payload size limit to handle larger requests
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Check if the MongoDB URL is set
 if (!process.env.MONGO_URL) {
@@ -36,7 +38,6 @@ const mongoOptions = {
   dbName: "CCGM",
 };
 
-// Improved MongoDB connection with error handling
 mongoose
   .connect(process.env.MONGO_URL, mongoOptions)
   .then(() => console.log("Successfully connected to MongoDB"))
@@ -45,7 +46,7 @@ mongoose
     process.exit(1);
   });
 
-const PORT = process.env.PORT || 3000; // Default to 3000 if PORT is not set
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

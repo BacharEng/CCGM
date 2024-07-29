@@ -31,6 +31,7 @@ export const useMessageStore = create<MessageStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const data = await messageService.getMessages();
+      //console.log("Messages:", data);
       set({ messages: data });
     } catch (err: any) {
       set({ error: err.message });

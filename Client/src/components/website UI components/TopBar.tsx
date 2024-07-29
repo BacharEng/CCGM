@@ -1,14 +1,21 @@
 import React from "react";
 import useUserStore from "../../store/useUserStore";
+import "./TopBar.css"; // Import the CSS file
 
-const TopBar: React.FC = () => {
+interface TopBarProps {
+  setCurrentContent: (content: string) => void;
+}
+
+const TopBar: React.FC<TopBarProps> = ({ setCurrentContent }) => {
   const { logout: handleLogout } = useUserStore();
+
+  const handleLogoClick = () => {
+    setCurrentContent("messageHome");
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a className="navbar-brand order-1" href="#">
-        CCGM
-      </a>
+      <a className="navbar-brand order-1">CCGM</a>
       <button
         className="navbar-toggler order-2"
         type="button"
@@ -23,17 +30,21 @@ const TopBar: React.FC = () => {
       <div className="collapse navbar-collapse order-3" id="navbarNav">
         <ul className="navbar-nav ml-auto">
           <li className="nav-item active">
-            <a className="nav-link" href="#">
-              Tab 1
+            <a className="nav-link custom-nav-link" onClick={handleLogoClick}>
+              דף הודעות
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#">
+            <a className="nav-link custom-nav-link" href="#">
               Tab 2
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link logout-tab" href="#" onClick={handleLogout}>
+            <a
+              className="nav-link custom-nav-link logout-tab"
+              href="#"
+              onClick={handleLogout}
+            >
               יציאה מהמשתמש
             </a>
           </li>

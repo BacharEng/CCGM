@@ -1,10 +1,16 @@
 import mongoose, { Document } from "mongoose";
 
+interface IImage {
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 interface IMessage extends Document {
   title: string;
   body: string;
-  mainImage?: string;
-  imageArray?: string[];
+  mainImage?: IImage;
+  imageArray?: IImage[];
   link?: string;
   createdBy?: mongoose.Schema.Types.ObjectId;
   creationDate?: Date;
@@ -12,11 +18,17 @@ interface IMessage extends Document {
   isHidden?: boolean;
 }
 
+const imageSchema = new mongoose.Schema({
+  data: { type: String, required: true },
+  mimeType: { type: String, required: true },
+  name: { type: String, default: "" },
+});
+
 const messageSchema = new mongoose.Schema({
   title: { type: String, required: true },
   body: { type: String, required: true },
-  mainImage: { type: String, default: "" },
-  imageArray: { type: [String], default: [] },
+  mainImage: { type: imageSchema, default: null },
+  imageArray: { type: [imageSchema], default: [] },
   link: { type: String, default: "" },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

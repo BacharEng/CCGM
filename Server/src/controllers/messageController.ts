@@ -1,6 +1,23 @@
 import { Request, Response } from "express";
 import Message from "../models/messageModel";
 import _ from "lodash";
+import { storage } from "../firebaseConfig"; // Import Firebase configuration
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// Helper function to upload a file to Firebase Storage
+const uploadFileToFirebase = async (
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string
+): Promise<string> => {
+  const storageRef = ref(storage, fileName);
+
+  await uploadBytes(storageRef, fileBuffer, {
+    contentType: mimeType,
+  });
+
+  return getDownloadURL(storageRef);
+};
 
 // Create a new Message
 export const createMessage = async (
@@ -8,19 +25,71 @@ export const createMessage = async (
   res: Response
 ): Promise<void> => {
   try {
-    const message = new Message(req.body);
+    console.log("Request body:", req.body);
+
+    const { title, body, link, createdBy, isHidden, mainImage, imageArray } =
+      req.body;
+
+    // Validate required fields
+    if (!title || !body || !createdBy) {
+      res
+        .status(400)
+        .send({ error: "Title, body, and createdBy are required" });
+      return;
+    }
+
+    let mainImageUrl = "";
+    const imageUrls: string[] = [];
+
+    // Upload mainImage if it exists
+    if (mainImage) {
+      const mainImageBuffer = Buffer.from(mainImage.data, "base64");
+      mainImageUrl = await uploadFileToFirebase(
+        mainImageBuffer,
+        `${Date.now()}_mainImage`,
+        mainImage.mimeType
+      );
+      console.log("Uploaded main image URL:", mainImageUrl);
+    }
+
+    // Upload images in imageArray if they exist
+    if (imageArray && imageArray.length > 0) {
+      for (const image of imageArray) {
+        const imageBuffer = Buffer.from(image.data, "base64");
+        const imageUrl = await uploadFileToFirebase(
+          imageBuffer,
+          `${Date.now()}_${image.name}`,
+          image.mimeType
+        );
+        console.log("Uploaded image URL:", imageUrl);
+        imageUrls.push(imageUrl);
+      }
+    }
+
+    const message = new Message({
+      title,
+      body,
+      mainImage: mainImageUrl,
+      imageArray: imageUrls,
+      link,
+      createdBy,
+      isHidden,
+    });
+
     const savedMessage = await message.save();
+    console.log("Saved message:", savedMessage);
     res
       .status(201)
       .send({ message: "Message created successfully", data: savedMessage });
   } catch (error: any) {
+    console.error("Error creating message:", error);
     res.status(400).send({ error: error.message });
   }
 };
 
 // Get all Messages
 export const getMessages = async (
-  _req: Request,
+  req: Request,
   res: Response
 ): Promise<void> => {
   try {
@@ -44,9 +113,17 @@ export const getMessageById = async (
       res.status(404).send({ error: "Message not found" });
       return;
     }
-    res
-      .status(200)
-      .send({ message: "Message retrieved successfully", data: message });
+
+    // Include image URLs in the response
+    const messageWithImages = {
+      ...message.toObject(),
+      imageArray: message.imageArray || [],
+    };
+
+    res.status(200).send({
+      message: "Message retrieved successfully",
+      data: messageWithImages,
+    });
   } catch (error: any) {
     res.status(500).send({ error: error.message });
   }

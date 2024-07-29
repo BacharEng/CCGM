@@ -1,0 +1,48 @@
+/* TopBar.css */
+
+.navbar {
+  padding: 1rem;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-link {
+  font-size: 1.2rem;
+  color: #ffffff !important;
+}
+
+.custom-nav-link {
+  font-size: 1.2rem;
+  color: #ffffff !important;
+  transition: color 0.3s ease;
+}
+
+.custom-nav-link:hover {
+  color: #ffcc00 !important; /* Change to your preferred hover color */
+}
+
+.custom-nav-link {
+  cursor: pointer;
+}
+
+.navbar-brand {
+  cursor: pointer;
+}
+
+.logout-tab {
+  font-weight: bold;
+}
+
+.logout-tab:hover {
+  color: red;
+  text-decoration: underline;
+  background-color: rgba(
+    255,
+    0,
+    0,
+    0.3
+  ); /* More pronounced red background on hover */
+}
