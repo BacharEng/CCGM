@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 
@@ -35,9 +36,11 @@ const App: React.FC = () => {
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
+      localStorage.setItem("tokenTimestamp", Date.now().toString());
       setLocalToken(token);
     } else {
       localStorage.removeItem("token");
+      localStorage.removeItem("tokenTimestamp");
       setLocalToken(null);
     }
 
@@ -50,16 +53,27 @@ const App: React.FC = () => {
     }
   }, [user, token]);
 
-  // Check for session timeout
   useEffect(() => {
-    const tokenTimestamp = localStorage.getItem("tokenTimestamp");
-    if (tokenTimestamp) {
-      const currentTime = Date.now();
-      const tokenTime = parseInt(tokenTimestamp, 10);
-      if (currentTime - tokenTime > import.meta.env.SESSION_TIMEOUT) {
-        handleLogout();
+    // Function to check for session timeout
+    const checkSessionTimeout = () => {
+      const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+      if (tokenTimestamp) {
+        const currentTime = Date.now();
+        const tokenTime = parseInt(tokenTimestamp, 10);
+        if (currentTime - tokenTime > import.meta.env.SESSION_TIMEOUT) {
+          handleLogout();
+        }
       }
-    }
+    };
+  
+    // Check session timeout on mount
+    checkSessionTimeout();
+  
+    // Set interval to check session timeout periodically
+    const intervalId = setInterval(checkSessionTimeout, 60000); // Check every 60 seconds
+  
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleLogout = () => {
@@ -73,9 +87,9 @@ const App: React.FC = () => {
 
   return (
     <>
-      {localToken ? (
+      {localUser && localToken ? (
         <div className="admin-container">
-          <AdminScreen localUser={localUser} handleLogout={handleLogout} />
+          <AdminScreen />
         </div>
       ) : (
         <div className="container-fluid h-100">

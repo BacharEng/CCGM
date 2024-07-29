@@ -12,6 +12,15 @@ node_modules
 /server/.env.development.local
 /server/.env.test.local
 /client/src/.env
+/client/dist/
+/client/.env
+/client/.env.example
+/client/.env.local
+/client/.env.test
+/client/.env.development
+/client/.env.production
+/client/.env.staging
+/client/.env.staging.local
 *.log
 logs/
 .DS_Store

@@ -9,6 +9,8 @@ const login = async (
     email,
     password,
   });
+  //console.log(response.data);
+  
   return response.data;
 };
 

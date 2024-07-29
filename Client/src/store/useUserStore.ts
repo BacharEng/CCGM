@@ -66,6 +66,8 @@ const useUserStore = create<ExtendedUserState>((set) => ({
         isAdmin: response.user.isAdmin,
         createdAt: response.user.createdAt,
       };
+      //console.log("User:", user);
+      //console.log(response.token);
       set({ user, token: response.token });
     } catch (error) {
       console.error("Login failed:", error);

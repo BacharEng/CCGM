@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { Button, Form, Container } from "react-bootstrap";
 import { toast } from "react-toastify";
 import useUserStore from "../store/useUserStore";
+import { sanitizeInput } from "../utils/sanitizeInput"; 
 
 const AuthPage = () => {
   const login = useUserStore((state) => state.login);
   const token = useUserStore((state) => state.token);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [localToken, setLocalToken] = useState(token);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,15 +18,19 @@ const AuthPage = () => {
       toast.error("Please fill in all fields");
       return;
     }
-
+  
     try {
       await login(email, password);
-      // Redirect or show success message
-      // console.log(token);
-      setLocalToken(token);
+      const newToken = useUserStore.getState().token;
+      setLocalToken(newToken);
+      if (import.meta.env.DEV) {
+        console.log("Token after login:", newToken);
+      }
       toast.success("Logged in successfully");
     } catch (error) {
-      // Show error message
+      if (import.meta.env.DEV) {
+        console.error("Login error:", error);
+      }
       toast.error("Failed to log in");
     }
   };
@@ -37,7 +43,7 @@ const AuthPage = () => {
           <Form.Control
             type="email"
             placeholder="Enter email"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(sanitizeInput(e.target.value))}
           />
         </Form.Group>
         <Form.Group>
@@ -45,7 +51,7 @@ const AuthPage = () => {
           <Form.Control
             type="password"
             placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(sanitizeInput(e.target.value))} 
           />
         </Form.Group>
         <Button variant="primary" type="submit" className="mt-3">

@@ -5,6 +5,8 @@ import { CreateMessageRequest } from "../../types/messageTypes";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const allowedCharacters = /^[^<>/]*$/;
+
 const NewMessage: React.FC = () => {
   const { createMessage, loading, error } = useMessageStore();
   const { user } = useUserStore(); // Get user data from Zustand
@@ -22,10 +24,45 @@ const NewMessage: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setMessageData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (allowedCharacters.test(value)) {
+      setMessageData((prevData) => ({
+        ...prevData,
+        [name]: value, // Only update if the value contains allowed characters
+      }));
+    } else {
+      toast.error("Invalid characters detected. Please remove them.");
+    }
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "mainImage" | "imageArray"
+  ) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const fileReaders = fileArray.map((file) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        return new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+        });
+      });
+
+      Promise.all(fileReaders).then((urls) => {
+        if (field === "mainImage") {
+          setMessageData((prevData) => ({
+            ...prevData,
+            mainImage: urls[0], // Only one main image
+          }));
+        } else {
+          setMessageData((prevData) => ({
+            ...prevData,
+            imageArray: urls, // Multiple images
+          }));
+        }
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,37 +127,44 @@ const NewMessage: React.FC = () => {
             Main Image
           </label>
           <input
-            type="text"
+            type="file"
             className="form-control"
             id="mainImage"
             name="mainImage"
-            value={messageData.mainImage}
-            onChange={handleChange}
+            onChange={(e) => handleFileChange(e, "mainImage")}
+            accept="image/*"
           />
+          {messageData.mainImage && (
+            <img
+              src={messageData.mainImage}
+              alt="Main Preview"
+              style={{ width: "100px", height: "100px", marginTop: "10px" }}
+            />
+          )}
         </div>
         <div className="mb-3">
           <label htmlFor="imageArray" className="form-label">
-            Image Array (comma separated URLs)
+            Image Array
           </label>
           <input
-            type="text"
+            type="file"
             className="form-control"
             id="imageArray"
             name="imageArray"
-            value={messageData.imageArray.join(", ")}
-            onChange={(e) =>
-              handleChange({
-                ...e,
-                target: {
-                  ...e.target,
-                  value: e.target.value
-                    .split(",")
-                    .map((url) => url.trim())
-                    .join(", "),
-                },
-              })
-            }
+            onChange={(e) => handleFileChange(e, "imageArray")}
+            accept="image/*"
+            multiple
           />
+          <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+            {messageData.imageArray.map((url, index) => (
+              <img
+                key={index}
+                src={url}
+                alt={`Preview ${index}`}
+                style={{ width: "100px", height: "100px", marginRight: "10px" }}
+              />
+            ))}
+          </div>
         </div>
         <div className="mb-3">
           <label htmlFor="link" className="form-label">
