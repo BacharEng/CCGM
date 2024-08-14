@@ -9,7 +9,7 @@ const allowedCharacters = /^[^<>/]*$/;
 
 const NewMessage: React.FC = () => {
   const { createMessage, loading, error } = useMessageStore();
-  const { user } = useUserStore(); // Get user data from Zustand
+  const { user } = useUserStore();
   const [messageData, setMessageData] = useState<
     Omit<CreateMessageRequest, "createdBy">
   >({
@@ -27,7 +27,7 @@ const NewMessage: React.FC = () => {
     if (allowedCharacters.test(value)) {
       setMessageData((prevData) => ({
         ...prevData,
-        [name]: value, // Only update if the value contains allowed characters
+        [name]: value,
       }));
     } else {
       toast.error("Invalid characters detected. Please remove them.");

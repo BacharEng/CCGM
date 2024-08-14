@@ -21,7 +21,7 @@ interface MessageStore {
   deleteMessage: (id: string) => Promise<void>;
 }
 
-export const useMessageStore = create<MessageStore>((set) => ({
+export const useMessageStore = create<MessageStore>((set, get) => ({
   messages: [],
   message: null,
   loading: false,
@@ -31,7 +31,6 @@ export const useMessageStore = create<MessageStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const data = await messageService.getMessages();
-      //console.log("Messages:", data);
       set({ messages: data });
     } catch (err: any) {
       set({ error: err.message });
@@ -75,6 +74,7 @@ export const useMessageStore = create<MessageStore>((set) => ({
           msg._id === id ? { ...msg, ...data } : msg
         ),
       }));
+      await get().fetchMessages(); // Re-fetch messages after update
     } catch (err: any) {
       set({ error: err.message });
     } finally {
@@ -89,6 +89,7 @@ export const useMessageStore = create<MessageStore>((set) => ({
       set((state) => ({
         messages: state.messages.filter((msg) => msg._id !== id),
       }));
+      await get().fetchMessages(); // Re-fetch messages after deletion
     } catch (err: any) {
       set({ error: err.message });
     } finally {

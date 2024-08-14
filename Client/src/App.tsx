@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
+import Modal from "react-modal";
 
 import useUserStore from "./store/useUserStore";
 import { User } from "./types/userTypes";
@@ -13,6 +14,9 @@ import AdminScreen from "./screens/adminScreen";
 
 // Assuming the type of token is string. Adjust according to your actual data model.
 type Token = string | null | undefined;
+
+// Set the app element for react-modal
+Modal.setAppElement("#root");
 
 const App: React.FC = () => {
   const user: User | null = useUserStore((state) => state.user);
@@ -65,13 +69,13 @@ const App: React.FC = () => {
         }
       }
     };
-  
+
     // Check session timeout on mount
     checkSessionTimeout();
-  
+
     // Set interval to check session timeout periodically
     const intervalId = setInterval(checkSessionTimeout, 60000); // Check every 60 seconds
-  
+
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
   }, []);
